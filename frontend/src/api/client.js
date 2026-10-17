@@ -1,19 +1,47 @@
 // Central API client with token injection and error normalization.
 
+// Production: https://digital-workforce.onrender.com
+// Local development: uses the Vite proxy through /api
 const API_BASE = (
-  import.meta.env.VITE_API_URL || '/api'
+  import.meta.env.VITE_API_URL || ''
 ).replace(/\/+$/, '');
+
+const API_PREFIX = '/api';
 
 let authToken = null;
 
+// Set authentication token
 export function setAuthToken(token) {
   authToken = token;
 }
 
+// Get authentication token
 export function getAuthToken() {
   return authToken;
 }
 
+// Normalize API paths to prevent missing or duplicate /api prefixes
+function normalizeApiPath(path) {
+  const normalizedPath = path.startsWith('/')
+    ? path
+    : `/${path}`;
+
+  if (
+    normalizedPath === API_PREFIX ||
+    normalizedPath.startsWith(`${API_PREFIX}/`)
+  ) {
+    return normalizedPath;
+  }
+
+  return `${API_PREFIX}${normalizedPath}`;
+}
+
+// Build complete API URL
+function buildApiUrl(path) {
+  return `${API_BASE}${normalizeApiPath(path)}`;
+}
+
+// Common request handler
 async function request(method, path, { body, formData } = {}) {
   const headers = {};
 
@@ -25,7 +53,10 @@ async function request(method, path, { body, formData } = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  const options = { method, headers };
+  const options = {
+    method,
+    headers,
+  };
 
   if (body !== undefined) {
     options.body = JSON.stringify(body);
@@ -35,11 +66,7 @@ async function request(method, path, { body, formData } = {}) {
     options.body = formData;
   }
 
-  const normalizedPath = path.startsWith('/')
-    ? path
-    : `/${path}`;
-
-  const res = await fetch(`${API_BASE}${normalizedPath}`, options);
+  const res = await fetch(buildApiUrl(path), options);
   const contentType = res.headers.get('content-type') || '';
 
   if (!res.ok) {
@@ -68,41 +95,58 @@ async function request(method, path, { body, formData } = {}) {
   return res;
 }
 
+// API methods
 export const api = {
   get: (path) => request('GET', path),
-  post: (path, body) => request('POST', path, { body }),
-  put: (path, body) => request('PUT', path, { body }),
-  del: (path) => request('DELETE', path),
-  upload: (path, formData) => request('POST', path, { formData }),
-  download: (path) => request('GET', path),
+
+  post: (path, body) =>
+    request('POST', path, { body }),
+
+  put: (path, body) =>
+    request('PUT', path, { body }),
+
+  del: (path) =>
+    request('DELETE', path),
+
+  upload: (path, formData) =>
+    request('POST', path, { formData }),
+
+  download: (path) =>
+    request('GET', path),
 };
 
+// Download files with authentication
 export function downloadFromUrl(path, filename) {
-  const normalizedPath = path.startsWith('/')
-    ? path
-    : `/${path}`;
-
-  const url = `${API_BASE}${normalizedPath}`;
+  const url = buildApiUrl(path);
 
   fetch(url, {
     headers: {
-      Authorization: `Bearer ${authToken}`,
+      ...(authToken
+        ? { Authorization: `Bearer ${authToken}` }
+        : {}),
     },
   })
-    .then((res) => {
-      if (!res.ok) throw new Error('Download failed');
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(`Download failed (${res.status})`);
+      }
+
       return res.blob();
     })
     .then((blob) => {
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+
+      link.href = objectUrl;
       link.download = filename;
 
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      URL.revokeObjectURL(link.href);
+      URL.revokeObjectURL(objectUrl);
     })
-    .catch((err) => alert(`Download failed: ${err.message}`));
+    .catch((err) => {
+      alert(`Download failed: ${err.message}`);
+    });
 }
