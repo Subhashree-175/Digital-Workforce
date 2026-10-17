@@ -22,8 +22,37 @@ const app = express();
 // app.use(cors({ origin: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(','), credentials: true }));
 app.use(helmet());
 
+// const allowedOrigins = [
+//   'http://localhost:5173',
+//   'https://digital-workforce-frontend.vercel.app',
+//   'https://digital-workforce-frontend-git-main-subhashree2.vercel.app',
+//   'https://digital-workforce-frontend-6k7sk8ubp-subhashree2.vercel.app',
+// ];
+
+// if (process.env.CORS_ORIGIN) {
+//   allowedOrigins.push(
+//     ...process.env.CORS_ORIGIN
+//       .split(',')
+//       .map((origin) => origin.trim())
+//       .filter(Boolean)
+//   );
+// }
+
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       return callback(null, true);
+//     }
+
+//     return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// }));
 const allowedOrigins = [
   'http://localhost:5173',
+  'https://digital-workforce-m8pr.vercel.app',
   'https://digital-workforce-frontend.vercel.app',
   'https://digital-workforce-frontend-git-main-subhashree2.vercel.app',
   'https://digital-workforce-frontend-6k7sk8ubp-subhashree2.vercel.app',
@@ -38,18 +67,22 @@ if (process.env.CORS_ORIGIN) {
   );
 }
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+      return callback(
+        new Error(`Origin not allowed by CORS: ${origin}`)
+      );
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
