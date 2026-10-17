@@ -293,7 +293,7 @@ dist
 
 Set the frontend environment variable:
 
-VITE_API_URL=https://your-render-service.onrender.com
+VITE_API_URL=https://digital-workforce.onrender.com
 
 Replace the example value with your actual Render service URL.
 
