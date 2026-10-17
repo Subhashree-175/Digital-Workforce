@@ -1,150 +1,363 @@
-# Digital Workforce — KPI-Driven Government Performance Evaluation Platform
+# Digital Workforce
+### Government KPI Evaluation and Performance Management Platform
 
-A full-stack web application for replacing manual government performance
-appraisals with a standardized, transparent, **KPI-driven digital evaluation
-system**. Built with **React (Vite) + Express + PostgreSQL**.
+Digital Workforce is a web-based platform designed to digitize employee
+performance evaluation in government departments using Key Performance
+Indicators (KPIs).
 
-## Problem being solved
-
-Manual appraisals cause lack of transparency, performance bias, low
-accountability and inefficient workforce utilization. This platform:
-
-- Implements **KPI-based evaluation** with **automated scoring** (weighted
-  achievement % with over-achievement cap at 150%)
-- Provides **transparent appraisal workflows** + full **audit trail**
-- Enables **department-level productivity monitoring** & analytics dashboards
-- Reduces paperwork through **work log submissions with document upload** and
-  PDF / Excel / CSV **report exports**
-
-## Tech stack
-
-| Layer      | Technology                                  |
-| ---------- | ------------------------------------------- |
-| Frontend   | React 18, Vite 5, React Router 6, Recharts  |
-| Backend    | Node.js 18+, Express 4, JWT auth, Multer    |
-| Database   | PostgreSQL 14+ (verified on 18)             |
-| Reports    | ExcelJS (xlsx), pdf-lib (pdf), CSV          |
-| Testing    | Jest (scoring unit tests)                   |
-
-## Project structure
-
-```
-Digital workforce/
-├─ backend/
-│  ├─ database/        # schema.sql, migrate.js, seed.js
-│  ├─ src/
-│  │  ├─ config/       # PostgreSQL pool (dotenv)
-│  │  ├─ controllers/  # auth, users, departments, kpis, workLogs,
-│  │  │                # evaluations, analytics, reports
-│  │  ├─ middleware/   # JWT auth, role authorization, error handler, upload
-│  │  ├─ routes/       # REST route definitions
-│  │  └─ utils/        # scoring, jwt, audit, report data builders
-│  ├─ tests/           # scoring unit tests
-│  └─ server.js / src/app.js
-└─ frontend/
-   └─ src/
-      ├─ api/          # fetch client + token handling
-      ├─ context/      # AuthContext (role/state)
-      ├─ components/   # layout, UI primitives
-      └─ pages/        # login, dashboards, work logs, review, evaluations,
-                       # assignments, departments, users, audit, reports, profile
-```
+The platform helps administrators and department heads manage employees,
+assign KPIs, monitor work progress, evaluate performance, and generate
+performance reports through a centralized dashboard.
 
 ---
 
-## 1. Prerequisites
+## Features
 
-- **Node.js 18+** (tested on 22)
-- **PostgreSQL 14+** running locally
-- A PostgreSQL superuser (e.g. `postgres`) with password
+### Authentication and Authorization
+- Secure login using email and password.
+- JWT-based authentication.
+- Role-based access control.
+- Different access permissions for administrators, department heads,
+  and employees.
 
-## 2. Database setup
+### Employee Management
+- Manage employee information.
+- Organize employees by department.
+- View employee performance information.
 
-1. Create the database (one time):
+### KPI Management
+- Create and manage Key Performance Indicators.
+- Assign KPIs to employees.
+- Track targets and performance metrics.
+- Monitor KPI progress.
 
-   ```bash
-   psql -U postgres -h 127.0.0.1 -c "CREATE DATABASE digital_workforce;"
-   ```
+### Work Log Management
+- Record employee work activities.
+- Track work progress.
+- Maintain work history.
 
-2. Configure credentials in `backend/.env` (copy from `.env.example`):
+### Performance Evaluation
+- Evaluate employee performance based on KPIs.
+- Monitor evaluation records.
+- Support performance assessment.
 
-   ```env
-   DB_HOST=127.0.0.1
-   DB_PORT=5432
-   DB_NAME=digital_workforce
-   DB_USER=postgres
-   DB_PASSWORD=your_password_here
-   JWT_SECRET=some_long_random_secret
-   ```
-## 3. Install & run the backend
+### Analytics and Reports
+- View performance analytics.
+- Monitor departmental performance.
+- Generate performance reports.
 
-```bash
+### Department Management
+- Manage government departments.
+- Organize employees and department heads.
+- Monitor departmental KPIs.
+
+---
+
+## User Roles
+
+| Role | Responsibilities |
+|------|------------------|
+| Administrator | Manage users, departments, and platform data |
+| Department Head | Manage departmental employees and performance |
+| Employee | View assigned KPIs and manage work activities |
+
+Actual permissions depend on the application's role-based authorization rules.
+
+---
+
+## Technology Stack
+
+### Frontend
+- React.js
+- Vite
+- JavaScript
+- Tailwind CSS
+
+### Backend
+- Node.js
+- Express.js
+- REST API
+- JWT Authentication
+
+### Database
+- PostgreSQL
+- Neon PostgreSQL
+
+### Deployment
+- Vercel – Frontend
+- Render – Backend
+- Neon – Database Hosting
+
+---
+
+## Project Structure
+
+Digital workforce/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── context/
+│   │   └── pages/
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   └── app.js
+│   ├── server.js
+│   └── package.json
+│
+└── README.md
+
+---
+
+## Prerequisites
+
+Install the following before running the project locally:
+
+- Node.js
+- npm
+- PostgreSQL database or Neon PostgreSQL account
+- Git
+
+---
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+git clone https://github.com/Subhashree-175/Digital-Workforce.git
+
+cd Digital-Workforce
+
+### 2. Configure the Backend
+
+Navigate to the backend directory:
+
 cd backend
+
+Install dependencies:
+
 npm install
-npm run setup      # runs migrate + seed (demo data)
-npm run dev        # Express on http://localhost:5000
-```
 
-- `npm run migrate` — applies `database/schema.sql`
-- `npm run seed` — inserts demo departments, users, KPIs, assignments, an
-  approved evaluation, work logs and attendance
-- `npm test` — runs the automated scoring unit tests
+Create a `.env` file in the backend directory.
 
-## 4. Install & run the frontend
+Configure the following environment variables:
 
-```bash
+PORT=5000
+NODE_ENV=development
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=digital_workforce
+DB_USER=postgres
+DB_PASSWORD=your_database_password
+
+JWT_SECRET=replace_with_a_long_random_secret
+JWT_EXPIRES_IN=8h
+
+CORS_ORIGIN=http://localhost:5173
+
+For Neon PostgreSQL, use the connection details supplied by Neon.
+Configure SSL according to your database connection settings.
+
+Never commit your real `.env` file to GitHub.
+
+### 3. Set Up the Database
+
+Run the database migration command from the backend directory:
+
+npm run migrate
+
+To insert the sample data, run:
+
+npm run seed
+
+Only run the seed command when you intend to insert the supplied demo data.
+
+### 4. Start the Backend
+
+From the backend directory:
+
+npm start
+
+The backend should start on:
+
+http://localhost:5000
+
+Health-check endpoint:
+
+http://localhost:5000/api/health
+
+### 5. Configure the Frontend
+
+Open another terminal and navigate to the frontend directory:
+
 cd frontend
+
+Install dependencies:
+
 npm install
-npm run dev        # Vite on http://localhost:5173 (proxies /api to :5000)
-```
 
-Open **http://localhost:5173**.
+Create a `.env` file inside the frontend directory:
 
-## 5. Demo accounts (password for all: `Password@123`)
+VITE_API_URL=http://localhost:5000
 
-| Role       | Email                                    | Scope                                   |
-| ---------- | ---------------------------------------- | --------------------------------------- |
-| Admin      | admin@digitalworkforce.gov               | Cross-department, users, audit, reports |
-| HOD        | anita.sharma@digitalworkforce.gov        | Revenue dept team, evaluations, reports |
-| HOD        | rajesh.kumar@digitalworkforce.gov        | Public Works team                       |
-| Employee   | priya.verma@digitalworkforce.gov         | Revenue dept (Tehsildar)                |
-| Employee   | kavita.rao@digitalworkforce.gov          | IT dept (Data Entry Operator)           |
+Ensure the frontend uses the configured API base URL and the backend routes
+include the `/api` prefix.
 
-## 6. Feature map
+### 6. Start the Frontend
 
-| User flow          | Capabilities                                                            |
-| ------------------ | ------------------------------------------------------------------------ |
-| Employee           | Login, dashboard (assigned KPIs + performance), submit work log with     |
-|                    | document upload, track Pending/Approved/Rejected, view scores/analytics  |
-| Supervisor (HOD)   | Team dashboard, review submissions (approve/reject + comments), create   |
-|                    | evaluations with automated scoring, generate reports                     |
-| Admin              | Configure departments, create & assign KPIs (weightage + cycle), use     |
-|                    | cross-dept analytics, manage users & roles, audit trail, export reports  |
+Run:
 
-### Key API endpoints
-- `POST /api/auth/login` · `GET /api/auth/me`
-- `GET/POST/PUT/DELETE /api/departments`, `/api/users`, `/api/kpis`
-- `POST /api/kpis/assignments` — assign KPI targets
-- `GET/POST /api/work-logs` · `PUT /api/work-logs/:id/review`
-- `POST /api/evaluations/upsert` (automated scoring) · `PUT .../submit|approve|reject`
-- `GET /api/analytics/summary|department-productivity|kpi-trend|performers|audit-logs`
-- `GET /api/reports/:type?format=csv|excel|pdf`
+npm run dev
 
-## 7. Automated scoring model
-```
-achievement % = min( (achieved / target) × 100, 150 )
-weighted score = achievement % × weight ÷ 100
-overall score = Σ weighted scores for the period
-rating bands: Outstanding (≥120) · Exceeds (≥100) · Meets (≥80)
-              Needs Improvement (≥60) · Unsatisfactory (<60)
-```
+Open the local URL displayed by Vite, usually:
 
-## 8. Testing
-```bash
-cd backend && npm test        # scoring logic + rating bands (11 tests)
-```
+http://localhost:5173
 
-> ⚠️ `backend/.env` contains local dev credentials. Never commit real
-> credentials; use environment variables in production and follow
-> government IT/security policies (encryption at rest, TLS, RBAC via
-> JWT + role guards).
+---
+
+## Environment Variables
+
+### Backend
+
+| Variable | Description |
+|----------|-------------|
+| PORT | Backend server port |
+| NODE_ENV | Application environment |
+| DB_HOST | PostgreSQL host |
+| DB_PORT | PostgreSQL port |
+| DB_NAME | Database name |
+| DB_USER | Database username |
+| DB_PASSWORD | Database password |
+| JWT_SECRET | Secret used for signing JWTs |
+| JWT_EXPIRES_IN | JWT expiration duration |
+| CORS_ORIGIN | Allowed frontend origins, comma-separated |
+
+### Frontend
+
+| Variable | Description |
+|----------|-------------|
+| VITE_API_URL | Base URL of the backend API |
+
+Do not expose database credentials or private signing secrets in frontend
+environment variables.
+
+---
+
+## API Endpoints
+
+The backend exposes REST API routes under the `/api` prefix.
+
+| Endpoint | Purpose |
+|----------|---------|
+| GET /api/health | Check backend availability |
+| /api/auth | Authentication |
+| /api/departments | Department management |
+| /api/users | User management |
+| /api/kpis | KPI management |
+| /api/work-logs | Work log management |
+| /api/evaluations | Performance evaluations |
+| /api/analytics | Performance analytics |
+| /api/reports | Report management |
+
+Specific HTTP methods and route paths depend on the individual route files.
+
+Protected endpoints require a valid authentication token and appropriate
+user permissions.
+
+---
+
+## Deployment
+
+The application uses the following deployment architecture:
+
+### Frontend – Vercel
+
+Deploy the `frontend` directory using Vercel.
+
+Build command:
+
+npm run build
+
+Output directory:
+
+dist
+
+Set the frontend environment variable:
+
+VITE_API_URL=https://your-render-service.onrender.com
+
+Replace the example value with your actual Render service URL.
+
+### Backend – Render
+
+Deploy the `backend` directory as a Node.js web service.
+
+Build command:
+
+npm install
+
+Start command:
+
+npm start
+
+Configure the required database, JWT, and CORS environment variables in
+the Render dashboard.
+
+Set `CORS_ORIGIN` to the exact production Vercel origin or origins.
+
+### Database – Neon
+
+Use the PostgreSQL connection details from your Neon project.
+
+Ensure that the backend can connect to the database and that migrations
+have been applied before testing the application.
+
+---
+
+## Security Considerations
+
+- Keep `.env` files out of version control.
+- Use a strong, unique JWT secret in production.
+- Never publish database passwords or authentication secrets.
+- Change demo passwords before allowing public access.
+- Restrict CORS to trusted frontend origins.
+- Use HTTPS for production deployments.
+- Apply appropriate authorization checks to protected endpoints.
+
+---
+
+## Future Enhancements
+
+Potential future improvements include:
+
+- Advanced performance analytics.
+- Automated KPI evaluation workflows.
+- Improved reporting and visualization.
+- Notifications for KPI deadlines.
+- Audit trails for administrative activities.
+- Additional dashboard customization.
+
+These are potential enhancements and may not be implemented in the current version.
+
+---
+
+## Author
+
+Subhashree Priyadarshini
+
+GitHub: https://github.com/Subhashree-175
+
+---
+
+## License
+
+Specify the license under which this project is distributed.
