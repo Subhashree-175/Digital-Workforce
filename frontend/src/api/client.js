@@ -1,5 +1,8 @@
 // Central API client with token injection and error normalization.
-const API_BASE = '/api';
+
+const API_BASE = (
+  import.meta.env.VITE_API_URL || '/api'
+).replace(/\/+$/, '');
 
 let authToken = null;
 
@@ -13,18 +16,35 @@ export function getAuthToken() {
 
 async function request(method, path, { body, formData } = {}) {
   const headers = {};
-  if (authToken) headers.Authorization = `Bearer ${authToken}`;
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const options = { method, headers };
-  if (body !== undefined) options.body = JSON.stringify(body);
-  if (formData !== undefined) options.body = formData;
 
-  const res = await fetch(`${API_BASE}${path}`, options);
+  if (body !== undefined) {
+    options.body = JSON.stringify(body);
+  }
+
+  if (formData !== undefined) {
+    options.body = formData;
+  }
+
+  const normalizedPath = path.startsWith('/')
+    ? path
+    : `/${path}`;
+
+  const res = await fetch(`${API_BASE}${normalizedPath}`, options);
   const contentType = res.headers.get('content-type') || '';
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
+
     try {
       if (contentType.includes('application/json')) {
         const data = await res.json();
@@ -32,13 +52,19 @@ async function request(method, path, { body, formData } = {}) {
       } else {
         message = await res.text();
       }
-    } catch { /* ignore */ }
+    } catch {
+      // Ignore response parsing errors.
+    }
+
     const error = new Error(message);
     error.status = res.status;
     throw error;
   }
 
-  if (contentType.includes('application/json')) return res.json();
+  if (contentType.includes('application/json')) {
+    return res.json();
+  }
+
   return res;
 }
 
@@ -52,9 +78,17 @@ export const api = {
 };
 
 export function downloadFromUrl(path, filename) {
-  // Browser download of a blob/report from the API (must include token via query-less fetch)
-  const url = `${API_BASE}${path}`;
-  fetch(url, { headers: { Authorization: `Bearer ${authToken}` } })
+  const normalizedPath = path.startsWith('/')
+    ? path
+    : `/${path}`;
+
+  const url = `${API_BASE}${normalizedPath}`;
+
+  fetch(url, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  })
     .then((res) => {
       if (!res.ok) throw new Error('Download failed');
       return res.blob();
@@ -63,9 +97,11 @@ export function downloadFromUrl(path, filename) {
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = filename;
+
       document.body.appendChild(link);
       link.click();
       link.remove();
+
       URL.revokeObjectURL(link.href);
     })
     .catch((err) => alert(`Download failed: ${err.message}`));
