@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Builds
+frontend/dist/
+backend/dist/
+
+# Environment & secrets
+backend/.env
+*.env.local
+
+# Logs & temp
+*.log
+*.token
+*.tmp
+
+# Uploaded documents (runtime data)
+backend/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
