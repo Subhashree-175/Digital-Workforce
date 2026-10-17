@@ -1,7 +1,11 @@
 // Central API client with token injection and error normalization.
 
-// Production: https://digital-workforce.onrender.com
-// Local development: uses the Vite proxy through /api
+// Production:
+// https://digital-workforce.onrender.com
+
+// Local development:
+// Uses the Vite proxy through /api
+
 const API_BASE = (
   import.meta.env.VITE_API_URL || ''
 ).replace(/\/+$/, '');
@@ -45,10 +49,12 @@ function buildApiUrl(path) {
 async function request(method, path, { body, formData } = {}) {
   const headers = {};
 
+  // Add authentication token if available
   if (authToken) {
     headers.Authorization = `Bearer ${authToken}`;
   }
 
+  // Set JSON content type when sending JSON data
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json';
   }
@@ -58,17 +64,23 @@ async function request(method, path, { body, formData } = {}) {
     headers,
   };
 
+  // Attach JSON body
   if (body !== undefined) {
     options.body = JSON.stringify(body);
   }
 
+  // Attach FormData without setting Content-Type manually
   if (formData !== undefined) {
     options.body = formData;
   }
 
-  const res = await fetch(buildApiUrl(path), options);
+  const url = buildApiUrl(path);
+
+  const res = await fetch(url, options);
+
   const contentType = res.headers.get('content-type') || '';
 
+  // Normalize API errors
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
 
@@ -77,17 +89,23 @@ async function request(method, path, { body, formData } = {}) {
         const data = await res.json();
         message = data.message || message;
       } else {
-        message = await res.text();
+        const text = await res.text();
+
+        if (text) {
+          message = text;
+        }
       }
     } catch {
-      // Ignore response parsing errors.
+      // Ignore response parsing errors
     }
 
     const error = new Error(message);
     error.status = res.status;
+
     throw error;
   }
 
+  // Return JSON for JSON responses
   if (contentType.includes('application/json')) {
     return res.json();
   }
@@ -135,8 +153,8 @@ export function downloadFromUrl(path, filename) {
     })
     .then((blob) => {
       const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
 
+      const link = document.createElement('a');
       link.href = objectUrl;
       link.download = filename;
 
