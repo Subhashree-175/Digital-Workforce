@@ -7,11 +7,15 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'digital_workforce',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
+
+  // Use SSL for hosted PostgreSQL connections.
+  ssl: process.env.DB_HOST
+    ? { rejectUnauthorized: true }
+    : undefined,
 });
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client', err);
-  process.exit(1);
 });
 
 module.exports = {
